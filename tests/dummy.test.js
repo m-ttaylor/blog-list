@@ -124,4 +124,22 @@ describe('favorite blog', () => {
       })
     })
   })
+
+  describe('most likes', () => {
+    test('of one blog is the only author in that blog', () => {
+      const result = listHelper.mostLikes(listWithOneBlog)
+      expect(result).toEqual({
+        author: 'Edsger W. Dijkstra',
+        likes: 5
+      })
+    })
+
+    test('of several blogs is correct', () => {
+      const result = listHelper.mostLikes(longerListOfBlogs)
+      expect(result).toEqual({
+        author: 'Edsger W. Dijkstra',
+        likes: 17
+      })
+    })
+  })
 })
