@@ -47,21 +47,29 @@ const mostBlogs = (blogs) => {
 }
 
 const mostLikes = (blogs) => {
-  const totalLikes = _.groupBy(blogs, blog => Math.max(blog.likes))
-  console.log('totalLikes:', totalLikes)
-  const likeCounts = _.countBy(blogs, (blog) => blog.likes)
-  console.log('like counts:', likeCounts)
-  return blogs.reduce((max, blog) => {
-    return max > blog.likes
-      ? {
-        author: blog.author,
-        likes: max
-      }
-      : {
-        author: blog.author,
-        likes: blog.likes
-      }
-  }, {})
+
+  const countLikes = (blogs) => _.sumBy(blogs, (blog) => blog.likes)
+
+  const allAuthors = blogs.reduce((authors, blog) => {
+    return !authors.includes(blog.author)
+      ? authors.concat(blog.author)
+      : authors
+  }, [])
+  console.log('all authors are', allAuthors)
+
+  const likeTotals = []
+  allAuthors.forEach(author => {
+    const likes = countLikes(blogs.filter(blog => blog.author === author))
+    likeTotals.push({
+      author: author,
+      likes: likes
+    })
+  })
+
+  console.log('likes totals are', likeTotals)
+  const highestLikes = Math.max(...likeTotals.map(i => i.likes))
+
+  return likeTotals.find(total => total.likes === highestLikes)
 }
 
 module.exports = {
