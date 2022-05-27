@@ -14,14 +14,9 @@ const totalLikes = (blogs) => {
 const favoriteBlog = (blogs) => {
   const mostLikes = blogs.reduce((highest, blog) => Math.max(highest, blog.likes), 0)
 
-  return blogs.reduce((result, blog) => {
-    if (blog.likes === mostLikes) {
-      result.author = blog.author
-      result.title = blog.title
-      result.likes = blog.likes
-    }
-    // console.log(result)
-    return result
+  return blogs.reduce((result, { author, title, likes }) => {
+    return likes === mostLikes
+      ? { author, title, likes } : result
   }, {})
 }
 
