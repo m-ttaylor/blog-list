@@ -77,6 +77,65 @@ describe('a blog without', () => {
   })
 })
 
+describe('deletion of a blog', () => {
+  
+  test('succeeds with status 204 if id is valid', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToDelete = blogsAtStart[0]
+
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .expect(204)
+
+    const blogsAtEnd = await helper.blogsInDb()
+
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length - 1)
+  })
+
+  // test('')
+})
+
+describe('updating of a blog post', () => {
+  test('suceeds when updating the likes for a post', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToUpdate = blogsAtStart[0]
+
+    const initialLikes = blogToUpdate.likes
+
+    const changedBlog = {
+      ...blogToUpdate,
+      likes: initialLikes + 1
+    }
+    
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(changedBlog)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    const blogsAtEnd = await helper.blogsInDb()
+
+    console.log(blogsAtEnd)
+    expect(blogsAtEnd[0].likes).toBe(initialLikes + 1)
+  })
+
+  test('fails when updating an invalid id', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToUpdate = blogsAtStart[0]
+    const invalidId = 'dfasdfasdr231'
+
+    const changedBlog = {
+      ...blogToUpdate,
+      author: 'Bad Id'
+    }
+
+    await api
+      .put(`/api/blogs/${invalidId}`)
+      .send(changedBlog)
+      .expect(400)
+  })
+})
+
 afterAll(() => {
   mongoose.connection.close()
 })
