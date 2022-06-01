@@ -135,7 +135,7 @@ describe('favorite blog', () => {
     })
 
     test('of several blogs is correct', () => {
-      console.log('input:', longerListOfBlogs)
+      // console.log('input:', longerListOfBlogs)
       const result = listHelper.mostLikes(longerListOfBlogs)
       expect(result).toEqual({
         author: 'Edsger W. Dijkstra',
