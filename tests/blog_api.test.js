@@ -16,15 +16,13 @@ beforeEach(async () => {
   await Promise.all(promiseArray)
 
   await BlogUser.deleteMany({})
+  
+  const userObjects = helper.initialUsers
+    .map(user => new BlogUser(user))
+  const userPromiseArray = userObjects.map(u => u.save())
+  await Promise.all(userPromiseArray)
 
-  const passwordHash1 = await bcrypt.hash('memphis', 10)
-  const user1 = new BlogUser({ 
-    username: 'theking', 
-    name: 'Elvis Presley',
-    passwordHash: passwordHash1
-  })
-
-  await user1.save()
+  const allUsers = await helper.usersInDb()
 })
 
 test('can get the right amount of blogs', async () => {
@@ -61,7 +59,7 @@ test('a valid blog can be added', async () => {
     likes: 0,
   }
 
-  await api
+  const newBlogResponse = await api
     .post('/api/blogs')
     .set({ Authorization: `bearer ${token}` })
     .send(newBlog)
@@ -98,7 +96,6 @@ test('likes default to 0 for a blog', async () => {
     .set({ Authorization: `bearer ${token}` })
     .send(newBlog).expect(201)
 
-  console.log(result.body)
   expect(result.body.likes).toBe(0)
 })
 
@@ -150,14 +147,41 @@ describe('a blog without', () => {
   })
 })
 
-describe('deletion of a blog', () => {
+describe('logging in', () => {
+  const credentials = { username: 'theking', password: 'memphis' }
+
+  test('is successful with valid credentials', async () => {
+    const loginResponse = await api
+      .post('/api/login')
+      .send(credentials)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    const token = loginResponse.body.token
+    expect(token).toBeDefined()
+  })
   
+})
+
+describe('deletion of a blog', () => {
+  const credentials = {
+    username: 'theking',
+    password: 'memphis'
+  }
+
   test('succeeds with status 204 if id is valid', async () => {
     const blogsAtStart = await helper.blogsInDb()
     const blogToDelete = blogsAtStart[0]
+    const loginResponse = await api
+      .post('/api/login')
+      .send(credentials)
+      .expect('Content-Type', /application\/json/)
+
+    const token = loginResponse.body.token
 
     await api
       .delete(`/api/blogs/${blogToDelete.id}`)
+      .set({ Authorization: `bearer ${token}` })
       .expect(204)
 
     const blogsAtEnd = await helper.blogsInDb()
@@ -165,7 +189,23 @@ describe('deletion of a blog', () => {
     expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length - 1)
   })
 
-  // test('')
+  test('fails if user deleting is not the user that created the blog', async () => {
+    const badCredentials = { username: 'hacker', password: 'password123' }
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToDelete = blogsAtStart[0]
+
+    const loginResponse = await api
+      .post('/api/login')
+      .send(badCredentials)
+      .expect('Content-Type', /application\/json/)
+
+    const token = loginResponse.body.token
+
+    const response = await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .set({ Authorization: `bearer ${token}` })
+      .expect(401)
+  })
 })
 
 describe('updating of a blog post', () => {
@@ -188,7 +228,6 @@ describe('updating of a blog post', () => {
 
     const blogsAtEnd = await helper.blogsInDb()
 
-    console.log(blogsAtEnd)
     expect(blogsAtEnd[0].likes).toBe(initialLikes + 1)
   })
 
