@@ -9,12 +9,26 @@ Content-Type: application/json
 }
 
 ###
+# Unauthorized
 POST http://localhost:3003/api/blogs/
 Content-Type: application/json
 
 {
-  "title": "One more blog",
+  "title": "Unauthorized blog",
   "author": "bobby crank",
+  "url": "fddsfsdf",
+  "likes": 1
+}
+
+###
+# Authorized
+POST http://localhost:3003/api/blogs/
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJsb2dsaXN0dGVzdCIsImlkIjoiNjI5NzgxYjZmYjU5YjIwMWE3MDA5ODRhIiwiaWF0IjoxNjU0MTA1OTAwfQ.WVxjkeK-ighcwZCDHnQVctm4QJL1wU81COpbGadgNm4
+
+{
+  "title": "Authorized blog",
+  "author": "Blob L. Test",
   "url": "fddsfsdf",
   "likes": 1
 }
@@ -28,6 +42,15 @@ Content-Type: application/json
 
 {
   "name": "Blog L. Test",
+  "username": "bloglisttest",
+  "password": "testtesttest"
+}
+
+###
+POST http://localhost:3003/api/login
+Content-Type: application/json
+
+{
   "username": "bloglisttest",
   "password": "testtesttest"
 }
