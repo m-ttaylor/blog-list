@@ -1,9 +1,11 @@
 const mongoose = require('mongoose')
+const bcrypt = require('bcrypt')
 const helper = require('./test_helper')
 const supertest = require('supertest')
 const app = require('../app')
 const api = supertest(app)
 const Blog = require('../models/blog')
+const BlogUser = require('../models/user')
 
 beforeEach(async () => {
   await Blog.deleteMany({})
@@ -12,6 +14,17 @@ beforeEach(async () => {
     .map(blog => new Blog(blog))
   const promiseArray = blogObjects.map(b => b.save())
   await Promise.all(promiseArray)
+
+  await BlogUser.deleteMany({})
+
+  const passwordHash1 = await bcrypt.hash('memphis', 10)
+  const user1 = new BlogUser({ 
+    username: 'theking', 
+    name: 'Elvis Presley',
+    passwordHash: passwordHash1
+  })
+
+  await user1.save()
 })
 
 test('can get the right amount of blogs', async () => {
@@ -28,6 +41,19 @@ test('id field is named correctly', async () => {
 })
 
 test('a valid blog can be added', async () => {
+
+  const credentials = {
+    username: 'theking',
+    password: 'memphis'
+  }
+
+  const loginResponse = await api
+    .post('/api/login')
+    .send(credentials)
+    .expect('Content-Type', /application\/json/)
+
+  const token = loginResponse.body.token
+
   const newBlog = {
     title: 'Antipatterns',
     author: 'Scoundrel',
@@ -35,7 +61,11 @@ test('a valid blog can be added', async () => {
     likes: 0,
   }
 
-  await api.post('/api/blogs').send(newBlog).expect(201)
+  await api
+    .post('/api/blogs')
+    .set({ Authorization: `bearer ${token}` })
+    .send(newBlog)
+    .expect(201)
 
   const blogsAtEnd = await helper.blogsInDb()
   expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1)
@@ -45,35 +75,78 @@ test('a valid blog can be added', async () => {
 })
 
 test('likes default to 0 for a blog', async () => {
+  const credentials = {
+    username: 'theking',
+    password: 'memphis'
+  }
+
+  const loginResponse = await api
+    .post('/api/login')
+    .send(credentials)
+    .expect('Content-Type', /application\/json/)
+
+  const token = loginResponse.body.token
+  
   const newBlog = {
     title: 'Very Sad',
     author: 'Villain',
     url: 'https://facebook.com'
   }
 
-  const result = await api.post('/api/blogs').send(newBlog).expect(201)
+  const result = await api
+    .post('/api/blogs')
+    .set({ Authorization: `bearer ${token}` })
+    .send(newBlog).expect(201)
+
   console.log(result.body)
   expect(result.body.likes).toBe(0)
 })
 
 describe('a blog without', () => {
-  
+  const credentials = {
+    username: 'theking',
+    password: 'memphis'
+  }
+
   test('a title to be rejected by the server', async () => {
+
+    const loginResponse = await api
+      .post('/api/login')
+      .send(credentials)
+      .expect('Content-Type', /application\/json/)
+
+    const token = loginResponse.body.token
+
     const newBlog = {
       author: 'Bob',
       url: 'https://test.test'
     }
 
-    await api.post('/api/blogs').send(newBlog).expect(400)
+    await api
+      .post('/api/blogs')
+      .set({ Authorization: `bearer ${token}` })
+      .send(newBlog)
+      .expect(400)
   })
 
   test('an author to be rejected by the server', async () => {
+    const loginResponse = await api
+      .post('/api/login')
+      .send(credentials)
+      .expect('Content-Type', /application\/json/)
+
+    const token = loginResponse.body.token
+    
     const newBlog = {
       title: 'Incognito',
       url: 'https://test.test'
     }
 
-    await api.post('/api/blogs').send(newBlog).expect(400)
+    await api
+      .post('/api/blogs')
+      .set({ Authorization: `bearer ${token}` })
+      .send(newBlog)
+      .expect(400)
   })
 })
 
