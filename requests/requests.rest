@@ -42,8 +42,8 @@ Content-Type: application/json
 
 {
   "name": "Blog L. Test",
-  "username": "bloglisttest",
-  "password": "testtesttest"
+  "username": "hacker", 
+  "password": "password123"
 }
 
 ###
