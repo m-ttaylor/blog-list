@@ -3,12 +3,42 @@ const BlogUser = require('../models/user')
 
 const initialBlogs = [
   {
+    _id: '62979c3ea2ab4c37edac1239',
+    title: 'first blog',
+    'author':'bobby crank',
+    'url':'fddsfsdf',
+    'likes': 1,
+    'user': '629781b6fb59b201a700984a',
+    '__v': 0
+  },
+  {
+    _id: '62979c45a2ab4c37edac123f',
+    title: 'second blog',
+    author: 'bobby crank',
+    url: 'fddsfsdf',
+    likes: 1,
+    user: '629781b6fb59b201a700984a',
+    __v: 0
+  },
+  {
+    _id: '62979c87e88713d610a8eaf0',
+    title: 'One more blog',
+    author: 'bobby crank',
+    url: 'fddsfsdf',
+    likes: 5,
+    user: '629781b6fb59b201a700984a',
+    __v: 0
+  }
+]
+
+const a = [
+  {
     _id: '5a422a851b54a676234d17f7',
     title: 'React patterns',
     author: 'Michael Chan',
     url: 'https://reactpatterns.com/',
     likes: 7,
-    __v: 0
+    __v: 0,
   },
   {
     _id: '5a422aa71b54a676234d17f8',
@@ -54,14 +84,18 @@ const initialBlogs = [
 
 const initialUsers= [
   {
-    username: 'johnnyboy',
-    name: 'John Smith',
-    password: 'jamestown'
-  },
-  {
     username: 'theking',
     name: 'Elvis Presley',
-    password: 'memphis'
+    password: 'memphis',
+    passwordHash: '$2b$10$TU9KLmzXV8Del8/SOSuPr.SoWtSm8nyC3JfomnzLxTwXb5DPkEIF.',
+    _id: '629781b6fb59b201a700984a'
+  },
+  {
+    username: 'hacker',
+    name: 'unimportant',
+    password: 'password123',
+    passwordHash: '$2b$10$gwU9OQ.YbcEcrKtScO9zyuOZo33z5qBedsLwawqH.ImizxFSSckTC',
+    _id: '6297d2d853b2c4887463088b'
   }
 ]
 
