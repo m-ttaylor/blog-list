@@ -100,6 +100,7 @@ describe('adding a blog post', () => {
       .set({ Authorization: `bearer ${token}` })
       .send(newBlog)
       .expect(401)
+    // console.log('full response is', newBlogResponse)
 
     const blogsAtEnd = await helper.blogsInDb()
     expect(blogsAtStart).toHaveLength(blogsAtEnd.length)
