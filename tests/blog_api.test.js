@@ -38,39 +38,74 @@ test('id field is named correctly', async () => {
   expect(response.body[0].id.toBeDefined)
 })
 
-test('a valid blog can be added', async () => {
+describe('adding a blog post', () => {
+  test('succeeds with a valid blog and authenticated user', async () => {
 
-  const credentials = {
-    username: 'theking',
-    password: 'memphis'
-  }
+    const credentials = {
+      username: 'theking',
+      password: 'memphis'
+    }
+  
+    const loginResponse = await api
+      .post('/api/login')
+      .send(credentials)
+      .expect('Content-Type', /application\/json/)
+  
+    const token = loginResponse.body.token
+  
+    const newBlog = {
+      title: 'Antipatterns',
+      author: 'Scoundrel',
+      url: 'https://en.wikipedia.org/wiki/Anti-pattern',
+      likes: 0,
+    }
+  
+    const newBlogResponse = await api
+      .post('/api/blogs')
+      .set({ Authorization: `bearer ${token}` })
+      .send(newBlog)
+      .expect(201)
+  
+    const blogsAtEnd = await helper.blogsInDb()
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1)
+  
+    const titles = blogsAtEnd.map(b => b.title)
+    expect(titles).toContain('Antipatterns')
+  })
 
-  const loginResponse = await api
-    .post('/api/login')
-    .send(credentials)
-    .expect('Content-Type', /application\/json/)
+  test('fails with an unauthenticated user', async () => {
+    const blogsAtStart = await helper.blogsInDb()
 
-  const token = loginResponse.body.token
+    const credentials = {
+      username: 'doesntexist',
+      password: 'fakepasswordforfakeuser'
+    }
 
-  const newBlog = {
-    title: 'Antipatterns',
-    author: 'Scoundrel',
-    url: 'https://en.wikipedia.org/wiki/Anti-pattern',
-    likes: 0,
-  }
+    const loginResponse = await api
+      .post('/api/login')
+      .send(credentials)
+      .expect(401)
+  
+    const token = loginResponse.body.token
+  
+    const newBlog = {
+      title: 'Let Me Post a Blog Unauthenticated!',
+      author: 'dastard',
+      url: 'https://en.wikipedia.org/wiki/AFI%27s_100_Years...100_Heroes_%26_Villains',
+      likes: 0,
+    }
 
-  const newBlogResponse = await api
-    .post('/api/blogs')
-    .set({ Authorization: `bearer ${token}` })
-    .send(newBlog)
-    .expect(201)
+    const newBlogResponse = await api
+      .post('/api/blogs')
+      .set({ Authorization: `bearer ${token}` })
+      .send(newBlog)
+      .expect(401)
 
-  const blogsAtEnd = await helper.blogsInDb()
-  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1)
-
-  const titles = blogsAtEnd.map(b => b.title)
-  expect(titles).toContain('Antipatterns')
+    const blogsAtEnd = await helper.blogsInDb()
+    expect(blogsAtStart).toHaveLength(blogsAtEnd.length)
+  })
 })
+
 
 test('likes default to 0 for a blog', async () => {
   const credentials = {
